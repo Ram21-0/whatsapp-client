@@ -71,20 +71,22 @@ function Chat(props) {
 
     async function addMember(e) {
         e.preventDefault()
-        await axios.post("/" + roomId.roomId + "/addNewMember", {
-            email: newMember,
-            displayName: props.user.user.displayName
-        }).then(response => {
-            // alert(Object.values(response)[0])
-            if (String(Object.values(response)[0]) === "0") alert(newMember + " does not exist!")
-            setNewMember("")
-            setShowButton(true)
-        }).then(async () => {
-            await axios.get("/rooms/" + roomId.roomId)
-                .then(response => {
-                    setMembers(response.data.members)
-                })
-        })
+        if(newMember.length > 0) {
+            await axios.post("/" + roomId.roomId + "/addNewMember", {
+                email: newMember,
+                displayName: props.user.user.displayName
+            }).then(response => {
+                // alert(Object.values(response)[0])
+                if (String(Object.values(response)[0]) === "0") alert(newMember + " does not exist!")
+                setNewMember("")
+            }).then(async () => {
+                await axios.get("/rooms/" + roomId.roomId)
+                    .then(response => {
+                        setMembers(response.data.members)
+                    })
+            })
+        }
+        setShowButton(true)
     }
 
     function getTextField() {
