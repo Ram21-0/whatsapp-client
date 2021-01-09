@@ -29,7 +29,7 @@ function Sidebar(props){
     },[])
 
     useEffect(() => {
-        var pusher = new Pusher('c71cecedf5e8f36f2a2f', {
+        var pusher = new Pusher('3e5c8fa39822b5985c24', {
             cluster: 'ap2'
         });
     
@@ -47,7 +47,7 @@ function Sidebar(props){
     }, [])
 
     useEffect(() => {
-        var pusher = new Pusher('c71cecedf5e8f36f2a2f', {
+        var pusher = new Pusher('3e5c8fa39822b5985c24', {
             cluster: 'ap2'
         });
         
@@ -63,7 +63,7 @@ function Sidebar(props){
     }, [])
 
     useEffect(() => {
-        var pusher = new Pusher('c71cecedf5e8f36f2a2f', {
+        var pusher = new Pusher('3e5c8fa39822b5985c24', {
             cluster: 'ap2'
         });
     
