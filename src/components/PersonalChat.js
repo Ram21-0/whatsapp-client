@@ -120,13 +120,16 @@ function PersonalChat(props) {
                                 <span className="chat-time">{new Date(message.timeStamp).toLocaleTimeString()}</span>
                             </div>
                         </p>
-                    ) :
+                    ) : message.type && message.type === "notif" ? (
+                                    <div>  
+                                    </div>
+                                ) : (
                         (
                             <p className={"chat-message" + (message.sender === props.user.user.displayName ? " chat-receiver" : "")} >
                                 {message.message}
                                 <span className="chat-time">{new Date(message.timeStamp).toLocaleTimeString()}</span>
                             </p>
-                        ))}
+                        )))}
 
             </div>
             <div className="chat-footer">
