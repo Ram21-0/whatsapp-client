@@ -12,6 +12,7 @@ import './chat.css';
 import axios from './axios.js'
 import { Link, useParams } from 'react-router-dom'
 import Pusher from 'pusher-js';
+import { firebaseApp } from "../firebase.js"
 
 function Recorder(props) {
 
@@ -21,40 +22,28 @@ function Recorder(props) {
     setRecord(true)
   }
 
-  const stopRecording = () => {
-    setRecord(true)
-  }
-
-  async function sendRecording(recordedBlob) {
-      await axios.post("/" + props.user.user._id + "/" + props.roomId + "/sendAudio", {
-        message: "Audio",
-        timeStamp: new Date().getTime(),
-        type: "audio",
-        sender: props.user.user.displayName,
-        media: recordedBlob.blob
-      })
-  }
-
   function onData(recordedBlob) {
     console.log('chunk of real-time data is: ', recordedBlob);
   }
 
-  async function onStop(recordedBlob) {
+  function onStop(recordedBlob) {
 
-    const data = recordedBlob.blob
-    await axios.post("/" + props.user.user._id + "/" + props.roomId + "/sendAudio", {
-      message: "Audio",
-      timeStamp: new Date().getTime(),
-      type: "audio",
-      sender: props.user.user.displayName,
-      media: URL.createObjectURL(recordedBlob.blob)
+    let storage = firebaseApp.storage().ref('Audio_New/' + props.user.user._id + String(new Date().getTime()) + '.wav');
+    let task = storage.put(recordedBlob.blob);
+    task.then(function (snapshot) {
+      console.log('Uploaded the file')
+      storage.getDownloadURL().then(async function (url) {
+        await axios.post("/" + props.user.user._id + "/" + props.roomId + "/sendAudio", {
+          message: "Audio",
+          timeStamp: new Date().getTime(),
+          type: "audio",
+          sender: props.user.user.displayName,
+          media: url
+        })
+      })
     })
 
-    console.log('recordedBlob is: ', recordedBlob, data);
-    console.log(URL.createObjectURL(recordedBlob.blob));
-
-    // sendRecording(recordedBlob)
-    
+    console.log(window.URL.createObjectURL(recordedBlob.blob));
   }
 
   return (
@@ -76,31 +65,12 @@ function Recorder(props) {
           } />
       </IconButton>
 
-      {/* <IconButton className={record ? "" : "hidden"}>
-        <Pause id="pauseAudio"
-          onClick={() => {
-            stopRecording()
-          }}
-        />
-      </IconButton> */}
-      {/* <IconButton className={record ? "" : "hidden"}>
-        <DeleteIcon id="deleteAudio"
-          onClick={() => {
-            setRecord(false)
-            // deleteRecording()
-          }
-          } />
-      </IconButton> */}
-
       <IconButton className={record ? "" : "hidden"}>
         <Send id="sendAudio"
           onClick={() => {
             setRecord(false)
-            // sendRecording()
           }} />
       </IconButton>
-      {/* <button onClick={this.startRecording} type="button">Start</button>
-      <button onClick={this.stopRecording} type="button">Stop</button> */}
     </div>
 
   );

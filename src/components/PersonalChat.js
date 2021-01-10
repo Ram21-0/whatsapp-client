@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Avatar, IconButton } from '@material-ui/core';
-import { Add, AttachFile, Block, Pause, PlayArrow, SearchOutlined, Send } from '@material-ui/icons';
+import { Add, Clear, AttachFile, Block, Pause, PlayArrow, SearchOutlined, Send } from '@material-ui/icons';
 import AddIcon from '@material-ui/icons/Add';
 import MoreVert from '@material-ui/icons/MoreVert';
 import InsertEmoticonIcon from '@material-ui/icons/InsertEmoticon'
@@ -12,6 +12,8 @@ import axios from './axios.js'
 import { Link, useParams } from 'react-router-dom'
 import Pusher from 'pusher-js';
 import Recorder from './Recorder.js'
+import SeedColor from "seed-color"
+import Message from "./Message.js"
 
 function PersonalChat(props) {
 
@@ -20,16 +22,28 @@ function PersonalChat(props) {
     const [roomName, setRoomName] = useState("")
     const [member1, setMember1] = useState({})
     const [member2, setMember2] = useState({})
-
+    const [replyMessage, setReplyMessage] = useState(null)
 
     let roomId = useParams();
 
     const sendMessage = async (e) => {
         e.preventDefault();
-        await axios.post("/" + props.user.user._id + "/" + roomId.roomId + "/newMessage", {
+        if(replyMessage) {
+            await axios.post("/" + props.user.user._id + "/" + roomId.roomId + "/newMessage", {
+                message: input,
+                sender: props.user.user.displayName,
+                timeStamp: new Date().getTime(),
+                reply: true,
+                parentMessageBody: replyMessage.message,
+                parentMessageSender: replyMessage.sender
+            }).then((response) => {
+                setReplyMessage(null)
+            })
+        }
+        else await axios.post("/" + props.user.user._id + "/" + roomId.roomId + "/newMessage", {
             message: input,
-            name: props.user.user.displayName,
-            timestamp: new Date().getTime(),
+            sender: props.user.user.displayName,
+            timeStamp: new Date().getTime(),
         })
         setInput("");
     }
@@ -75,6 +89,32 @@ function PersonalChat(props) {
         })
     }
 
+    function replyToMessage() {
+        if(replyMessage) return (
+            <div className="reply">
+                <p style={
+                    {   borderRadius:"1%", 
+                        padding:"10px", 
+                        borderLeft: "3px solid " + SeedColor(replyMessage.sender).toHex(), 
+                        backgroundColor: 'lightgray', 
+                        opacitiy: "0.5", 
+                        marginLeft: "96px",  
+                        marginTop: "5px",
+                        paddingLeft: "2px",
+                        flex: "1",
+                        fontSize:"12px" }}>
+                    <span className="chat-name" style={{ color: SeedColor(replyMessage.sender).toHex() }}> {replyMessage.sender} </span>
+                    {replyMessage.message}
+                </p>
+
+                <IconButton onClick={ () => {setReplyMessage(null)} }>
+                    <Clear/>
+                </IconButton>
+            </div>
+        )
+        else return <div></div>
+    }
+
 
 
     return (
@@ -102,52 +142,33 @@ function PersonalChat(props) {
             <div className="chat-body">
 
 
-
-                {messages.map((message) =>
-                    message.type && message.type === "audio" ? (
-                        <p className={"chat-message" + (props.user.user.displayName === message.sender ? " chat-receiver" : "")}>
-                            <div className="audio">
-                                {props.user.user.displayName === message.sender && <Avatar src={member1.displayName === message.sender ?
-                                    member1.photoURL : member2.photoURL} />}
-                                <audio
-                                    controls
-                                    src={message.media}>
-                                    Your browser does not support the
-                                    <code>audio</code> element.
-                                </audio>
-                                {props.user.user.displayName !== message.sender && <Avatar src={member1.displayName === message.sender ?
-                                    member1.photoURL : member2.photoURL} />}
-                                <span className="chat-time">{new Date(message.timeStamp).toLocaleTimeString()}</span>
-                            </div>
-                        </p>
-                    ) : message.type && message.type === "notif" ? (
-                                    <div>  
-                                    </div>
-                                ) : (
-                        (
-                            <p className={"chat-message" + (message.sender === props.user.user.displayName ? " chat-receiver" : "")} >
-                                {message.message}
-                                <span className="chat-time">{new Date(message.timeStamp).toLocaleTimeString()}</span>
-                            </p>
-                        )))}
+                {messages.map(message => <Message message={message} user={props.user} 
+                            setReplyMessage={setReplyMessage} 
+                            personal member1={member1} member2={member2}/>)}
 
             </div>
-            <div className="chat-footer">
-                <IconButton>
-                    <InsertEmoticonIcon />
-                </IconButton>
-                <IconButton>
-                    <AttachFile className="rotate-icon" />
-                </IconButton>
 
-                <form>
-                    <input placeholder="Type a message" type="text" value={input} onChange={e => setInput(e.target.value)} />
-                    <button type="submit" onClick={sendMessage}>Send message</button>
-                </form>
+            <div className="chat-footer-reply">
+
+                {replyToMessage()}
+
+                <div className="chat-footer">
+                    <IconButton>
+                        <InsertEmoticonIcon />
+                    </IconButton>
+                    <IconButton>
+                        <AttachFile className="rotate-icon" />
+                    </IconButton>
+
+                    <form>
+                        <input placeholder="Type a message" type="text" value={input} onChange={e => setInput(e.target.value)} />
+                        <button type="submit" onClick={sendMessage}>Send message</button>
+                    </form>
 
 
-                <Recorder user={props.user} roomId={roomId.roomId} />
+                    <Recorder user={props.user} roomId={roomId.roomId} />
 
+                </div>
             </div>
         </div>
     )

@@ -43,6 +43,21 @@
     /* flex-direction: column; */
 }
 
+.chat-poora {
+    display: flex;
+    width: fit-content;
+    margin-bottom: 30px;
+}
+
+.chat-poora-right {
+    margin-left: auto;
+}
+
+.chat-poora > .MuiSvgIcon-root {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
 .chat-message {
     position: relative;
     font-size: 16px;
@@ -50,7 +65,9 @@
     border-radius: 10px;
     width: fit-content;
     background-color: #fff;
-    margin-bottom: 30px;
+    
+    /* display: flex;
+    justify-content: space-between; */
 }
 
 .chat-receiver {
@@ -81,6 +98,16 @@
     font-size: x-small;
     position: relative;
     top: 5px;
+}
+
+.chat-footer-reply {
+    display: flex;
+    flex-direction: column;
+}
+
+.reply {
+    display: flex;
+    flex-direction: row;
 }
 
 .chat-footer {
